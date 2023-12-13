@@ -1,0 +1,39 @@
+trigger UpdateNumberOfContacts on Contact (after insert, after update, after delete, after undelete) {
+    // List to store Account IDs that need to be updated
+    Set<Id> accountIdsToUpdate = new Set<Id>();
+    
+    // Check for Contacts related to Accounts
+    if (Trigger.isInsert || Trigger.isUpdate || Trigger.isUndelete) {
+        for (Contact contact : Trigger.new) {
+            accountIdsToUpdate.add(contact.AccountId);
+        }
+    }
+    
+    // Check for Contacts that were deleted
+    if (Trigger.isDelete) {
+        for (Contact contact : Trigger.old) {
+            accountIdsToUpdate.add(contact.AccountId);
+        }
+    }
+    
+    // Update the Number_of_Contacts__c field on related Accounts
+    updateAccountNumberOfContacts(accountIdsToUpdate);
+}
+
+// Helper method to update the Number_of_Contacts__c field on related Accounts
+public static void updateAccountNumberOfContacts(Set<Id> accountIds) {
+    List<Account> accountsToUpdate = new List<Account>();
+    
+    for (Id accountId : accountIds) {
+        // Query to count Contacts related to the Account
+        Integer numberOfContacts = [SELECT COUNT() FROM Contact WHERE AccountId = :accountId];
+        
+        // Populate the Number_of_Contacts__c field
+        accountsToUpdate.add(new Account(Id = accountId, Number_of_Contacts__c = numberOfContacts));
+    }
+    
+    // Update the Accounts
+    if (!accountsToUpdate.isEmpty()) {
+        update accountsToUpdate;
+    }
+}
