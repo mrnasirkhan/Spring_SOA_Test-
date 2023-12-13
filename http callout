@@ -1,0 +1,32 @@
+public class HttpCalloutExample {
+    public static void makeCallout() {
+        // Define the endpoint URL
+        String endpoint = 'https://jsonplaceholder.typicode.com/posts/1';
+
+        // Create a new HTTP request
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint(endpoint);
+        request.setMethod('GET');
+
+        // Create a new HTTP object to send the request
+        Http http = new Http();
+
+        try {
+            // Send the request and get the response
+            HttpResponse response = http.send(request);
+
+            // Check if the callout was successful (HTTP status code 200)
+            if (response.getStatusCode() == 200) {
+                // Print the response body
+                System.debug('Response Body: ' + response.getBody());
+            } else {
+                // Print the error message if the callout was not successful
+                System.debug('HTTP Callout failed with status code ' + response.getStatusCode());
+                System.debug('Error Message: ' + response.getStatus());
+            }
+        } catch (Exception e) {
+            // Handle exceptions, such as network issues or timeouts
+            System.debug('Exception caught: ' + e.getMessage());
+        }
+    }
+}
